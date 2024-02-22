@@ -1,7 +1,13 @@
 #include <blib.h>
+#define BITOP(a, b, op)                                                        \
+    ((a)[(size_t)(b) / (8 * sizeof *(a))] op(size_t) 1                         \
+     << ((size_t)(b) % (8 * sizeof *(a))))
 
 size_t strlen(const char *s) {
-    panic("please implement");
+    const char *a = s;
+    for (; *s; s++)
+        ;
+    return s - a;
 }
 
 char *strcpy(char *dst, const char *src) {
@@ -43,11 +49,13 @@ int strncmp(const char *s1, const char *s2, size_t n) {
 }
 
 char *strcat(char *dst, const char *src) {
-    panic("please implement");
+    strcpy(dst + strlen(dst), src);
+    return dst;
 }
 
 char *strncat(char *dst, const char *src, size_t n){
-    panic("please implement");
+    strncpy(dst + strlen(dst), src, n);
+    return dst;
 }
 
 char *strchr(const char *str, int character){
@@ -61,8 +69,30 @@ char *strchr(const char *str, int character){
     return NULL;
 }
 
+size_t strcspn(const char *s, const char *c) {
+    const char *a = s;
+    size_t byteset[32 / sizeof(size_t)];
+    memset(byteset, 0, sizeof byteset);
+    for (; *c && BITOP(byteset, *(unsigned char *)c, |=); c++)
+        ;
+    for (; *s && !BITOP(byteset, *(unsigned char *)s, &); s++)
+        ;
+    return s - a;
+}
+
 char* strsep(char** stringp, const char* delim){
-    panic("please implement");
+    char *s = *stringp, *end;
+    if (!s) {
+        return NULL;
+    }
+    end = s + strcspn(s, delim);
+    if (*end) {
+        *end++ = '\0';
+    } else {
+        end = 0;
+    }
+    *stringp = end;
+    return s;
 }
 
 
