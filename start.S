@@ -8,7 +8,7 @@ var:
 /* '<x>' in the comments is the part to be replaced. */
 /* use '.align <x>' to align the following words to 1-byte boundary (disabling word-alignment) */
 /* so that the byte 3 and word 7 is "connected" */
-/* Your code here. (1/6) */
+.align 0
 
 .word 7, 8, 9
 
@@ -22,11 +22,11 @@ EXPORT(_start_mips)
 	/* Load the address of the string 'str' into the first parameter register. */
 	la      a0, str
 	/* use 'addiu  sp, sp, <x>' to push a proper-sized frame onto the stack for Nonleaf function 'print_str'. */
-	/* Your code here. (2/6) */
+	addiu	sp, sp, -4
 
 	jal     print_str
 	/* use 'addiu  sp, sp, <x>' to restore stack pointer. */
-	/* Your code here. (3/6) */
+	addiu	sp, sp, 4
 
 	/* Set the first four parameters. */
 	li      a0, 0
@@ -34,17 +34,17 @@ EXPORT(_start_mips)
 	li      a2, 2
 	li      a3, 3
 	/* use 'addiu  sp, sp, <x>' to push a proper-sized frame onto the stack for Nonleaf function 'hello'. */
-	/* Your code here. (4/6) */
+	addiu	sp, sp, -24
 
 	lw      t1, var	
 	li      t2, 5
 	/* use 'sw  t1, <x>(sp)' to store t1 at the proper place of the stack */
 	/* so that t1 is 5th argument of function hello. */
-	/* Your code here. (5/6) */
+	sw	t1, 16(sp)
 
 	/* use 'sw  t2, <x>(sp)' to store t2 at the proper place of the stack */
 	/* so that t2 is 6th argument of function hello. */
-	/* Your code here. (6/6) */
+	sw	t2, 20(sp)
 
 	/* use 'j' to call the function 'hello', we use 'j' instead of 'jal' because 'hello' is 'noreturn' */
 	j       hello
