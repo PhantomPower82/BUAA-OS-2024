@@ -6,9 +6,10 @@ cd ../test/code
 for i in {0..15}; do
 	gcc -c $i.c -o $i.o
 done
-gcc *.o -o hello
+gcc *.o -o ../hello
+cd ..
 ./hello 2> err.txt
-mv err.txt ../..
-cd ../..
+mv err.txt ..
+cd ..
 chmod 655 err.txt
 sed -n "$[${1:-1}+${2:-1}]p" err.txt >&2
