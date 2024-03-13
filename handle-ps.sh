@@ -34,13 +34,17 @@ fi
 # You can remove ":" after finishing.
 if $SORT; then
     # Your code here. (1/3)
-    :
+    sort -k4nr -k2n $FILE
 elif [ ! -z "$CMD" ]; then
     # Your code here. (2/3)
-    :
+    awk "/$CMD/ "'{print $0}' $FILE
 elif [ ! -z $PID ]; then
     # Your code here. (3/3)
-    :
+    PARENT=$PID
+    while [ $PARENT -ne 0 ]; do
+	    PARENT=`awk -v p=$PARENT '{if ($2 == p) { print $3 }}' $FILE`
+	    echo $PARENT
+    done
 else
     usage
     exit 1
