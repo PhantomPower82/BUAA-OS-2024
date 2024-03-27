@@ -110,6 +110,7 @@ printz:			if (num < 0) {
 				p++;
 				print_char(out, data, ',', 1, 0);
 				num = z;
+				neg_flag = 0;
 				goto printz;
 			} else if (p > 2) {
 				print_char(out, data, ')', 1, 0);
