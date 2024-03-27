@@ -300,6 +300,9 @@ int vscanfmt(scan_callback_t in, void *data, const char *fmt, va_list ap) {
 				ip = va_arg(ap, int*);
 				*ip = 0;
 				neg = ch == '-' ? 1 : 0;
+				if (neg) {
+					ch = '0';
+				}
 				do {
 					*ip = *ip * 10 + ch - '0';
 					in(data, &ch, 1);
@@ -313,6 +316,9 @@ int vscanfmt(scan_callback_t in, void *data, const char *fmt, va_list ap) {
 				ip = va_arg(ap, int*);
 				*ip = 0;
 				neg = ch == '-' ? 1 : 0;
+				if (neg) {
+					ch = '0';
+				}
 				do {
 					*ip = *ip * 16 + decode_hex(ch);
 					in(data, &ch, 1);
