@@ -43,4 +43,10 @@ void inputk(void *data, char *buf, size_t len) {
 
 int scanf(const char *fmt, ...) {
 	// Lab 1-Extra: Your code here. (1/5)
+	size_t = cnt = 0;
+	struct context_t ctx;
+	va_list ap;
+	va_start(ap, fmt);
+	vscanfmt(inputk, &cnt, fmt, ap);
+	va_end(ap);
 }
