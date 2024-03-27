@@ -30,4 +30,6 @@ typedef void (*fmt_callback_t)(void *data, const char *buf, size_t len);
 void vprintfmt(fmt_callback_t out, void *data, const char *fmt, va_list ap);
 /* End of Key Code "vprintfmt-overview" */
 
+typedef void (*scan_callback_t)(void *data, char *buf, size_t len);
+int vscanfmt(scan_callback_t in, void *data, const char *fmt, va_list ap);
 #endif
