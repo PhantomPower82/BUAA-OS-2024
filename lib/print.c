@@ -93,11 +93,11 @@ printy: 		if (long_flag) {
 			 * others. (hint: 'neg_flag').
 			 */
 			/* Exercise 1.4: Your code here. (8/8) */
-printz:			if (num < 0) {
+			if (num < 0) {
 				neg_flag = 1;
 				num = -num;
 			}
-			print_num(out, data, num, 10, neg_flag, width, ladjust, padc, 0);
+printz:			print_num(out, data, num, 10, neg_flag, width, ladjust, padc, 0);
 			if (p == 1) {
 				if (neg_flag) {
 					num = -num;
@@ -115,6 +115,7 @@ printz:			if (num < 0) {
 			} else if (p > 2) {
 				print_char(out, data, ')', 1, 0);
 				p = 0;
+				x = y = 0;
 			}
 			break;
 
