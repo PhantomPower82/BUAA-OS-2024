@@ -271,11 +271,20 @@ void print_num(fmt_callback_t out, void *data, unsigned long u, int base, int ne
 	out(data, buf, length);
 }
 
+int decode_hex(char c) {
+	if (c >= 'a' && c <= 'f') {
+		return c - 'a' + 10;
+	} else {
+		return c - '0';
+	}
+}
+
 int vscanfmt(scan_callback_t in, void *data, const char *fmt, va_list ap) {
 	int *ip;
 	char *cp;
 	char ch;
-	int base, num, neg, ret = 0;
+	// int base, num, neg, ret = 0;
+	int neg, ret = 0;
 
 	while (*fmt) {
 		if (*fmt == '%') {
@@ -288,15 +297,46 @@ int vscanfmt(scan_callback_t in, void *data, const char *fmt, va_list ap) {
 			switch (*fmt) {
 			case 'd': // 十进制
 				// Lab 1-Extra: Your code here. (2/5)
+				ip = va_arg(ap, int*);
+				*ip = 0;
+				neg = ch == '-' ? 1 : 0;
+				do {
+					*ip = *ip * 10 + ch - '0';
+					in(data, &ch, 1);
+				} while (ch >= '0' && ch <= '9');
+				if (neg) {
+					*ip = -*ip;
+				}
 				break;
 			case 'x': // 十六进制
 				// Lab 1-Extra: Your code here. (3/5)
+				ip = va_arg(ap, int*);
+				*ip = 0;
+				neg = ch == '-' ? 1 : 0;
+				do {
+					*ip = *ip * 16 + decode_hex(ch);
+					in(data, &ch, 1);
+				} while ((ch >= '0' && ch <= '9') && (ch >= 'a' && ch <= 'f'));
+				if (neg) {
+					*ip = -*ip;
+				}
 				break;
 			case 'c':
 				// Lab 1-Extra: Your code here. (4/5)
+				cp = va_arg(ap, char*);
+				*cp = ch;
 				break;
 			case 's':
 				// Lab 1-Extra: Your code here. (5/5)
+				cp = va_arg(ap, char*);
+				while (ch == ' ' || ch == '\t' || ch == '\n') {
+					in(data, &ch, 1);
+				}
+				do {
+					*(cp++) = ch;
+					in(data, &ch, 1);
+				} while (ch == ' ' || ch == '\t' || ch == '\n');
+				*cp = '\0';
 				break;
 			}
 			fmt++;
