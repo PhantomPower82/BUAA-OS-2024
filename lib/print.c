@@ -15,6 +15,8 @@ void vprintfmt(fmt_callback_t out, void *data, const char *fmt, va_list ap) {
 	int neg_flag;  // output is negative
 	int ladjust;   // output is left-aligned
 	char padc;     // padding char
+	int p = 0;     // enter specifier P
+	long int x, y;
 
 	for (;;) {
 		/* scan for the next '%' */
@@ -61,6 +63,11 @@ void vprintfmt(fmt_callback_t out, void *data, const char *fmt, va_list ap) {
 
 		neg_flag = 0;
 		switch (*fmt) {
+		case 'P':
+			print_char(out, data, '(', 1, 0);
+			p = 1;
+			goto printy;
+			break;
 		case 'b':
 			if (long_flag) {
 				num = va_arg(ap, long int);
@@ -72,23 +79,42 @@ void vprintfmt(fmt_callback_t out, void *data, const char *fmt, va_list ap) {
 
 		case 'd':
 		case 'D':
-			if (long_flag) {
+printy: if (long_flag) {
 				num = va_arg(ap, long int);
 			} else {
 				num = va_arg(ap, int);
 			}
-
+			y = num;
+			int z = (x + y) * (x - y);
+			z = z < 0 ? -z : z;
 			/*
 			 * Refer to other parts (case 'b', case 'o', etc.) and func 'print_num' to
 			 * complete this part. Think the differences between case 'd' and the
 			 * others. (hint: 'neg_flag').
 			 */
 			/* Exercise 1.4: Your code here. (8/8) */
-			if (num < 0) {
+printz:			if (num < 0) {
 				neg_flag = 1;
 				num = -num;
 			}
 			print_num(out, data, num, 10, neg_flag, width, ladjust, padc, 0);
+			if (p == 1) {
+				if (neg_flag) {
+					num = -num;
+				}
+				x = num;
+				p++;
+				print_char(out, data, ',', 1, 0);
+				goto printy;
+			} else if (p == 2) {
+				p++;
+				print_char(out, data, ',', 1, 0);
+				num = z;
+				goto printz;
+			} else if (p > 2) {
+				print_char(out, data, ')', 1, 0);
+				p = 0;
+			}
 			break;
 
 		case 'o':
