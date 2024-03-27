@@ -47,6 +47,7 @@ int scanf(const char *fmt, ...) {
 //	struct context_t ctx;
 	va_list ap;
 	va_start(ap, fmt);
-	vscanfmt(inputk, &cnt, fmt, ap);
+	int ret = vscanfmt(inputk, &cnt, fmt, ap);
 	va_end(ap);
+	return ret;
 }
