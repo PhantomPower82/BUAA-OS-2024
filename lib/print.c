@@ -316,7 +316,7 @@ int vscanfmt(scan_callback_t in, void *data, const char *fmt, va_list ap) {
 				do {
 					*ip = *ip * 16 + decode_hex(ch);
 					in(data, &ch, 1);
-				} while ((ch >= '0' && ch <= '9') && (ch >= 'a' && ch <= 'f'));
+				} while ((ch >= '0' && ch <= '9') || (ch >= 'a' && ch <= 'f'));
 				if (neg) {
 					*ip = -*ip;
 				}
