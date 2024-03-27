@@ -105,6 +105,7 @@ printz:			print_num(out, data, num, 10, neg_flag, width, ladjust, padc, 0);
 				x = num;
 				p++;
 				print_char(out, data, ',', 1, 0);
+				neg_flag = 0;
 				goto printy;
 			} else if (p == 2) {
 				p++;
