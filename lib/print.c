@@ -79,13 +79,13 @@ void vprintfmt(fmt_callback_t out, void *data, const char *fmt, va_list ap) {
 
 		case 'd':
 		case 'D':
-printy: if (long_flag) {
+printy: 		if (long_flag) {
 				num = va_arg(ap, long int);
 			} else {
 				num = va_arg(ap, int);
 			}
 			y = num;
-			int z = (x + y) * (x - y);
+			long int z = (x + y) * (x - y);
 			z = z < 0 ? -z : z;
 			/*
 			 * Refer to other parts (case 'b', case 'o', etc.) and func 'print_num' to
