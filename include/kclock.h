@@ -17,7 +17,8 @@
 	 *
 	 */
 	/* Exercise 3.11: Your code here. */
-
+	mtc0	zero, CP0_COUNT
+	mtc0	t0, CP0_COMPARE
 .endm
 // clang-format on
 #endif
