@@ -528,7 +528,8 @@ void page_check(void) {
 #include <buddy.h>
 
 struct Page_list buddy_free_list[2];
-
+struct Page* buddies[1024];
+u_long cnt = 0;
 void buddy_init() {
 	LIST_INIT(&buddy_free_list[0]);
 	LIST_INIT(&buddy_free_list[1]);
@@ -563,6 +564,7 @@ int buddy_alloc(u_int size, struct Page **new) {
 			struct Page* head = LIST_FIRST(buddy_free_list + 1);
 			LIST_REMOVE(head, pp_link);
 			*new = head;
+			buddies[cnt++] = head;
 			LIST_INSERT_HEAD(list, pa2page(page2pa(*new) + 4096), pp_link);
 			return 1;
 		}
@@ -571,4 +573,33 @@ int buddy_alloc(u_int size, struct Page **new) {
 
 void buddy_free(struct Page *pp, int npp) {
 	/* Your Code Here (2/2) */
+	if (npp == 2) {
+		LIST_INSERT_HEAD(buddy_free_list + 1, pp, pp_link);
+	} else {
+		int flag = 0;
+		for (int i = 0; i < cnt; i++) {
+			int low = 0;
+			struct Page *to_be_found;
+			if (pp == buddies[i]) {
+				to_be_found = pa2page(page2pa(pp) + 4096);
+				low = 1;
+			} else if (pa2page(page2pa(pp) - 4096) == buddies[i]) {
+				to_be_found = buddies[i];
+				low = 0;
+			}
+			struct Page *buddy;
+			LIST_FOREACH(buddy, buddy_free_list, pp_link) {
+				if (buddy == to_be_found) 
+					buddies[i] = NULL;
+					LIST_INSERT_HEAD(buddy_free_list + 1, low ? pp : to_be_found, pp_link);
+				}
+				flag = 1;
+				break;
+			}
+		if (flag) {
+
+		} else {
+			LIST_INSERT_HEAD(buddy_free_list, pp, pp_link);
+		}
+	}
 }
