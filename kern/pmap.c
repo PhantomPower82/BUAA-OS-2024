@@ -324,10 +324,11 @@ void page_remove(Pde *pgdir, u_int asid, u_long va) {
 }
 /* End of Key Code "page_remove" */
 
-u_int page_filter_pte(Pte *pgt, u_int lt, u_int rt, u_int num) {
+u_int page_filter_pte(Pde *pgdir, u_long pdx, u_int lt, u_int rt, u_int num) {
 	u_int ans = 0;
-	if (!(*pgt & PTE_V)) return 0;
-	for (int i = lt; i < rt; i++) {
+	if (!(pgdir[pdx] & PTE_V)) return 0;
+	Pte *pgt = (Pte *)KADDR(PTE_ADDR(pgdir[pdx]));
+	for (u_int i = lt; i < rt; i++) {
 		Pte cur_pgt = pgt[i];
 		if (!(cur_pgt & PTE_V)) continue;
 		struct Page *pp = pa2page(cur_pgt);
@@ -342,15 +343,14 @@ u_int page_filter(Pde *pgdir, u_int va_lower_limit, u_int va_upper_limit, u_int 
 	u_int left = PDX(va_lower_limit), right = PDX(va_upper_limit),
 	      lt = PTX(va_lower_limit), rt = PTX(va_upper_limit);
 	if (left == right) {
-		Pte* pgt = (Pte *)KADDR(PTE_ADDR(pgdir[left]));
-		return page_filter_pte(pgt, lt, rt, num);
+		return page_filter_pte(pgdir, left, lt, rt, num);
 	}
 	else {
-		u_int ans = page_filter_pte((Pte*)KADDR(PTE_ADDR(pgdir[left])), lt, 1024, num);
+		u_int ans = page_filter_pte(pgdir, left, lt, 1024, num);
 		for (int i = left + 1; i < right; i++) {
-			ans += page_filter_pte((Pte*)KADDR(PTE_ADDR(pgdir[i])), 0, 1024, num);
+			ans += page_filter_pte(pgdir, i, 0, 1024, num);
 		}
-		ans += page_filter_pte((Pte*)KADDR(PTE_ADDR(pgdir[right])), 0, rt, num);
+		ans += page_filter_pte(pgdir, right, 0, rt, num);
 		return ans;
 	}	
 }
