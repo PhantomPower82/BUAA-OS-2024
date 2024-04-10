@@ -524,3 +524,51 @@ void page_check(void) {
 
 	printk("page_check() succeeded!\n");
 }
+
+#include <buddy.h>
+
+struct Page_list buddy_free_list[2];
+
+void buddy_init() {
+	LIST_INIT(&buddy_free_list[0]);
+	LIST_INIT(&buddy_free_list[1]);
+	for (int i = BUDDY_PAGE_BASE; i < BUDDY_PAGE_END; i += PAGE_SIZE) {
+		struct Page *pp = pa2page(i);
+		LIST_REMOVE(pp, pp_link);
+	}
+	for (int i = BUDDY_PAGE_BASE; i < BUDDY_PAGE_END; i += 2 * PAGE_SIZE) {
+		struct Page *pp = pa2page(i);
+		LIST_INSERT_HEAD(&buddy_free_list[1], pp, pp_link);
+	}
+}
+
+int buddy_alloc(u_int size, struct Page **new) {
+	/* Your Code Here (1/2) */
+	u_int alloc_size;
+	struct Page_list* list;
+	if (size <= 4096) {
+		alloc_size = 4;
+		list = buddy_free_list + 0;
+	} else {
+		alloc_size = 8;
+		list = buddy_free_list + 1;
+	}
+	if (!LIST_EMPTY(list)) {
+		*new = LIST_FIRST(list);
+		LIST_REMOVE(*new, pp_link);
+		return alloc_size / 4;
+	} else if (alloc_size == 4) {
+		if (LIST_EMPTY(buddy_free_list + 1)) { return -E_NO_MEM;}
+		else {
+			struct Page* head = LIST_FIRST(buddy_free_list + 1);
+			LIST_REMOVE(head, pp_link);
+			*new = head;
+			LIST_INSERT_HEAD(list, pa2page(page2pa(*new) + 4096), pp_link);
+			return 1;
+		}
+	} else return -E_NO_MEM;
+}
+
+void buddy_free(struct Page *pp, int npp) {
+	/* Your Code Here (2/2) */
+}
