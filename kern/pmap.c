@@ -324,6 +324,37 @@ void page_remove(Pde *pgdir, u_int asid, u_long va) {
 }
 /* End of Key Code "page_remove" */
 
+u_int page_filter_pte(Pte *pgt, u_int lt, u_int rt, u_int num) {
+	u_int ans = 0;
+	if (!(*pgt & PTE_V)) return 0;
+	for (int i = lt; i < rt; i++) {
+		Pte cur_pgt = pgt[i];
+		if (!(cur_pgt & PTE_V)) continue;
+		struct Page *pp = pa2page(cur_pgt);
+		if (pp->pp_ref >= num) ans++;
+	}
+	return ans;
+}
+
+
+u_int page_filter(Pde *pgdir, u_int va_lower_limit, u_int va_upper_limit, u_int num) {
+	if (va_lower_limit >= va_upper_limit) return 0;
+	u_int left = PDX(va_lower_limit), right = PDX(va_upper_limit),
+	      lt = PTX(va_lower_limit), rt = PTX(va_upper_limit);
+	if (left == right) {
+		Pte* pgt = (Pte *)KADDR(PTE_ADDR(pgdir[left]));
+		return page_filter_pte(pgt, lt, rt, num);
+	}
+	else {
+		u_int ans = page_filter_pte((Pte*)KADDR(PTE_ADDR(pgdir[left])), lt, 1024, num);
+		for (int i = left + 1; i < right; i++) {
+			ans += page_filter_pte((Pte*)KADDR(PTE_ADDR(pgdir[i])), 0, 1024, num);
+		}
+		ans += page_filter_pte((Pte*)KADDR(PTE_ADDR(pgdir[right])), 0, rt, num);
+		return ans;
+	}	
+}
+
 void physical_memory_manage_check(void) {
 	struct Page *pp, *pp0, *pp1, *pp2;
 	struct Page_list fl;
