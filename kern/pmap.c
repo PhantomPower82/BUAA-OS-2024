@@ -591,6 +591,7 @@ void buddy_free(struct Page *pp, int npp) {
 			LIST_FOREACH(buddy, buddy_free_list, pp_link) {
 				if (buddy == to_be_found) 
 					buddies[i] = NULL;
+					LIST_REMOVE(to_be_found, pp_link);
 					LIST_INSERT_HEAD(buddy_free_list + 1, low ? pp : to_be_found, pp_link);
 				}
 				flag = 1;
