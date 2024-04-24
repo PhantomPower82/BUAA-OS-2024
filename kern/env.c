@@ -154,6 +154,7 @@ void env_init(void) {
 	/* Exercise 3.1: Your code here. (2/2) */
 	for (i = NENV - 1; i >= 0; i--) {
 		envs[i].env_status = ENV_FREE;
+		envs[i].env_scheds = 1;
 		LIST_INSERT_HEAD(&env_free_list, &envs[i], env_link);
 	}
 
@@ -569,4 +570,11 @@ void envid2env_check() {
 	re = envid2env(pe2->env_id, &pe, 1);
 	assert(re == -E_BAD_ENV);
 	printk("envid2env() work well!\n");
+}
+
+void env_stat(struct Env *e, u_int *pri, u_int *scheds, u_int *runs, u_int *clocks) {
+	*pri = e->env_pri;
+	*scheds = e->env_scheds;
+	*runs = e->env_runs;
+	*clocks = e->env_tf.cp0_count;
 }
