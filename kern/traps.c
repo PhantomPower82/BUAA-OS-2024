@@ -54,9 +54,9 @@ void do_ri(struct Trapframe *tf) {
 		   }
 		}
         } else if (code == 0x3e) {
-		u_int tmp = *((u_int *)rs);
-		if (*((u_int *)rs) == *rt) {
-		   *((u_int *)rs) = *rd;
+		u_int tmp = *((u_int *)*rs);
+		if (*((u_int *)*rs) == *rt) {
+		   *((u_int *)*rs) = *rd;
 		}
 		*rd = tmp;
 	}
