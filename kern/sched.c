@@ -41,7 +41,7 @@ void schedule(int yield) {
 			TAILQ_REMOVE(&env_sched_list, e, env_sched_link);
 			TAILQ_INSERT_TAIL(&env_sched_list, e, env_sched_link);
 			e->env_scheds++;
-			e->env_clocks += ((struct Trapframe *)KSTACKTOP - 1)->cp0_count;
+			e->env_clocks = ((struct Trapframe *)KSTACKTOP - 1)->cp0_count;
 		}
 		if (TAILQ_EMPTY(&env_sched_list)) {
 			panic("schedule: no runnable envs");
