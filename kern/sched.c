@@ -17,7 +17,9 @@
 void schedule(int yield) {
 	static int count = 0; // remaining time slices of current env
 	struct Env *e = curenv;
-
+	if (curenv) {
+		curenv->env_clocks += ((struct Trapframe *)KSTACKTOP - 1)->cp0_count;
+	}
 	/* We always decrease the 'count' by 1.
 	 *
 	 * If 'yield' is set, or 'count' has been decreased to 0, or 'e' (previous 'curenv') is
@@ -41,7 +43,6 @@ void schedule(int yield) {
 			TAILQ_REMOVE(&env_sched_list, e, env_sched_link);
 			TAILQ_INSERT_TAIL(&env_sched_list, e, env_sched_link);
 			e->env_scheds++;
-			e->env_clocks = ((struct Trapframe *)KSTACKTOP - 1)->cp0_count;
 		}
 		if (TAILQ_EMPTY(&env_sched_list)) {
 			panic("schedule: no runnable envs");

@@ -155,6 +155,7 @@ void env_init(void) {
 	for (i = NENV - 1; i >= 0; i--) {
 		envs[i].env_status = ENV_FREE;
 		envs[i].env_scheds = 1;
+		envs[i].env_clocks = 0;
 		LIST_INSERT_HEAD(&env_free_list, &envs[i], env_link);
 	}
 
@@ -463,13 +464,13 @@ void env_run(struct Env *e) {
 	 *   'curenv->env_tf' first.
 	 */
 	if (curenv) {
+		// curenv->env_clocks += ((struct Trapframe *)KSTACKTOP - 1)->cp0_count;
 		curenv->env_tf = *((struct Trapframe *)KSTACKTOP - 1);
 	}
 
 	/* Step 2: Change 'curenv' to 'e'. */
 	curenv = e;
 	curenv->env_runs++; // lab6
-	// curenv->env_clocks += curenv->env_tf.cp0_count;
 
 	/* Step 3: Change 'cur_pgdir' to 'curenv->env_pgdir', switching to its address space. */
 	/* Exercise 3.8: Your code here. (1/2) */
