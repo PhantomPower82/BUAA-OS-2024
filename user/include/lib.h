@@ -69,9 +69,19 @@ int syscall_cgetc(void);
 int syscall_write_dev(void *va, u_int dev, u_int len);
 int syscall_read_dev(void *va, u_int dev, u_int len);
 
+void syscall_sem_open(int sem_id, int n);
+int syscall_sem_wait(int sem_id);
+int syscall_sem_post(int sem_id);
+int syscall_sem_kill(int sem_id);
+
 // ipc.c
 void ipc_send(u_int whom, u_int val, const void *srcva, u_int perm);
 u_int ipc_recv(u_int *whom, void *dstva, u_int *perm);
+
+void sem_open(int sem_id, int n);
+int sem_wait(int sem_id);
+int sem_post(int sem_id);
+int sem_kill(int sem_id);
 
 // wait.c
 void wait(u_int envid);
