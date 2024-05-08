@@ -1,6 +1,7 @@
 #ifndef _ENV_H_
 #define _ENV_H_
 
+#include <msg.h>
 #include <mmu.h>
 #include <queue.h>
 #include <trap.h>
@@ -39,6 +40,11 @@ struct Env {
 
 	// Lab 6 scheduler counts
 	u_int env_runs; // number of times we've been env_run'ed
+	
+	struct Msg_list env_msg_list;
+	u_int env_msg_value;
+	u_int env_msg_from;
+	u_int env_msg_perm;
 };
 
 LIST_HEAD(Env_list, Env);

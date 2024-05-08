@@ -278,6 +278,8 @@ int env_alloc(struct Env **new, u_int parent_id) {
 	LIST_REMOVE(e, env_link);
 
 	*new = e;
+
+	TAILQ_INIT(&e->env_msg_list);
 	return 0;
 }
 
