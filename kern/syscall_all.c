@@ -119,6 +119,15 @@ static inline int is_illegal_va_range(u_long va, u_int len) {
 	return va + len < va || va < UTEMP || va + len > UTOP;
 }
 
+static inline int is_illegal_dev_pa_range(u_long va, u_int len) {
+	if (len == 0) {
+		return 0;
+	}
+	return va + len < va || (
+			(va < 0x180003F8 || va + len > 0x18000418) &&
+			(va < 0x180001F0 || va + len > 0x180001F8));
+}
+
 /* Overview:
  *   Allocate a physical page and map 'va' to it with 'perm' in the address space of 'envid'.
  *   If 'va' is already mapped, that original page is sliently unmapped.
@@ -463,7 +472,11 @@ int sys_cgetc(void) {
  */
 int sys_write_dev(u_int va, u_int pa, u_int len) {
 	/* Exercise 5.1: Your code here. (1/2) */
-
+	if (is_illegal_va_range(va, len) || is_illegal_dev_pa_range(pa, len)) return -E_INVAL;
+	if (len == 1) iowrite8(*(uint8_t *)va, pa);
+	else if (len == 2) iowrite16(*(uint16_t *)va, pa);
+	else if (len == 4) iowrite32(*(uint32_t *)va, pa);
+	else return -E_INVAL;
 	return 0;
 }
 
@@ -484,7 +497,11 @@ int sys_write_dev(u_int va, u_int pa, u_int len) {
  */
 int sys_read_dev(u_int va, u_int pa, u_int len) {
 	/* Exercise 5.1: Your code here. (2/2) */
-
+	if (is_illegal_va_range(va, len) || is_illegal_dev_pa_range(pa, len)) return -E_INVAL;
+	if (len == 1) *(uint8_t *)va = ioread8(pa);
+	else if (len == 2) *(uint16_t *)va = ioread16(pa);
+	else if (len == 4) *(uint32_t *)va = ioread32(pa);
+	else return -E_INVAL;
 	return 0;
 }
 
