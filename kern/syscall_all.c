@@ -7,6 +7,7 @@
 #include <syscall.h>
 
 extern struct Env *curenv;
+extern int pgdir_ref[];
 
 /* Overview:
  * 	This function is used to print a character on screen.
@@ -488,6 +489,19 @@ int sys_read_dev(u_int va, u_int pa, u_int len) {
 	return 0;
 }
 
+int sys_clone(void *func, void *child_stack) {
+	struct Env *e;
+	if (pgdir_ref[PADDR(curenv->env_pgdir) >> PDSHIFT] >= 64) return -E_ACT_ENV_NUM_EXCEED;
+	try(env_clone(&e, curenv->env_id));
+	e->env_tf = *((struct Trapframe *)KSTACKTOP - 1);
+	e->env_tf.regs[29] = (unsigned long)child_stack;
+	e->env_tf.cp0_epc = (unsigned long)func;
+	e->env_status = ENV_RUNNABLE;
+	// e->env_pri = curenv->env_pri;
+	TAILQ_INSERT_TAIL(&env_sched_list, e, env_sched_link);
+	return e->env_id;
+}
+
 void *syscall_table[MAX_SYSNO] = {
     [SYS_putchar] = sys_putchar,
     [SYS_print_cons] = sys_print_cons,
@@ -507,6 +521,7 @@ void *syscall_table[MAX_SYSNO] = {
     [SYS_cgetc] = sys_cgetc,
     [SYS_write_dev] = sys_write_dev,
     [SYS_read_dev] = sys_read_dev,
+    [SYS_clone] = sys_clone,
 };
 
 /* Overview:

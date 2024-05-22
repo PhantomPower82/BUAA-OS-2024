@@ -7,6 +7,7 @@
 #include <sched.h>
 
 struct Env envs[NENV] __attribute__((aligned(PAGE_SIZE))); // All environments
+int pgdir_ref[1024] = {0};
 
 struct Env *curenv = NULL;	      // the current env
 static struct Env_list env_free_list; // Free list
@@ -199,6 +200,7 @@ static int env_setup_vm(struct Env *e) {
 	/* Exercise 3.3: Your code here. */
 	p->pp_ref++;
 	e->env_pgdir = (Pde *)page2kva(p);
+	pgdir_ref[page2pa(p) >> PDSHIFT] = 1;
 
 	/* Step 2: Copy the template page directory 'base_pgdir' to 'e->env_pgdir'. */
 	/* Hint:
@@ -263,6 +265,39 @@ int env_alloc(struct Env **new, u_int parent_id) {
 	e->env_id = mkenvid(e);
 	panic_on(asid_alloc(&(e->env_asid)));
 	e->env_parent_id = parent_id;
+
+	/* Step 4: Initialize the sp and 'cp0_status' in 'e->env_tf'.
+	 *   Set the EXL bit to ensure that the processor remains in kernel mode during context
+	 * recovery. Additionally, set UM to 1 so that when ERET unsets EXL, the processor
+	 * transitions to user mode.
+	 */
+	e->env_tf.cp0_status = STATUS_IM7 | STATUS_IE | STATUS_EXL | STATUS_UM;
+	// Reserve space for 'argc' and 'argv'.
+	e->env_tf.regs[29] = USTACKTOP - sizeof(int) - sizeof(char **);
+
+	/* Step 5: Remove the new Env from env_free_list. */
+	/* Exercise 3.4: Your code here. (4/4) */
+	LIST_REMOVE(e, env_link);
+
+	*new = e;
+	return 0;
+}
+
+int env_clone(struct Env **new, u_int parent_id) {
+	struct Env *e;
+	if (LIST_EMPTY(&env_free_list)) {
+		*new = NULL;
+		return -E_NO_FREE_ENV;
+	}
+	e = LIST_FIRST(&env_free_list);
+	e->env_user_tlb_mod_entry = 0; // for lab4
+	e->env_runs = 0;	       // for lab6
+	e->env_id = mkenvid(e);
+	e->env_parent_id = parent_id;
+	struct Env *parent = envs + ENVX(parent_id);
+	e->env_asid = parent->env_asid;
+	e->env_pgdir = parent->env_pgdir;
+	pgdir_ref[PADDR(e->env_pgdir) >> PDSHIFT]++;
 
 	/* Step 4: Initialize the sp and 'cp0_status' in 'e->env_tf'.
 	 *   Set the EXL bit to ensure that the processor remains in kernel mode during context
@@ -389,6 +424,7 @@ void env_free(struct Env *e) {
 	/* Hint: Note the environment's demise.*/
 	printk("[%08x] free env %08x\n", curenv ? curenv->env_id : 0, e->env_id);
 
+	if (pgdir_ref[PADDR(e->env_pgdir) >> PDSHIFT] == 1) {
 	/* Hint: Flush all mapped pages in the user portion of the address space */
 	for (pdeno = 0; pdeno < PDX(UTOP); pdeno++) {
 		/* Hint: only look at mapped page tables. */
@@ -411,12 +447,15 @@ void env_free(struct Env *e) {
 		/* Hint: invalidate page table in TLB */
 		tlb_invalidate(e->env_asid, UVPT + (pdeno << PGSHIFT));
 	}
-	/* Hint: free the page directory. */
-	page_decref(pa2page(PADDR(e->env_pgdir)));
-	/* Hint: free the ASID */
-	asid_free(e->env_asid);
-	/* Hint: invalidate page directory in TLB */
-	tlb_invalidate(e->env_asid, UVPT + (PDX(UVPT) << PGSHIFT));
+		/* Hint: free the page directory. */
+		page_decref(pa2page(PADDR(e->env_pgdir)));
+		/* Hint: free the ASID */
+		asid_free(e->env_asid);
+		/* Hint: invalidate page directory in TLB */
+		tlb_invalidate(e->env_asid, UVPT + (PDX(UVPT) << PGSHIFT));
+	} else {
+		pgdir_ref[PADDR(e->env_pgdir) >> PDSHIFT]--;
+	}
 	/* Hint: return the environment to the free list. */
 	e->env_status = ENV_FREE;
 	LIST_INSERT_HEAD((&env_free_list), (e), env_link);

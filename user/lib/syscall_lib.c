@@ -74,3 +74,8 @@ int syscall_read_dev(void *va, u_int dev, u_int size) {
 	/* Exercise 5.2: Your code here. (2/2) */
 
 }
+
+int syscall_clone(void *func, void *child_stack) {
+	return msyscall(SYS_clone, func, child_stack);
+}
+

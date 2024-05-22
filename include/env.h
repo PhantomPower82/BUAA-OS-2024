@@ -48,6 +48,7 @@ extern struct Env_sched_list env_sched_list; // runnable env list
 
 void env_init(void);
 int env_alloc(struct Env **e, u_int parent_id);
+int env_clone(struct Env **e, u_int parent_id);
 void env_free(struct Env *);
 struct Env *env_create(const void *binary, size_t size, int priority);
 void env_destroy(struct Env *e);
