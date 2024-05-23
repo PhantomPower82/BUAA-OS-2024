@@ -119,13 +119,13 @@ static inline int is_illegal_va_range(u_long va, u_int len) {
 	return va + len < va || va < UTEMP || va + len > UTOP;
 }
 
-static inline int is_illegal_dev_pa_range(u_long va, u_int len) {
+static inline int is_illegal_dev_pa_range(u_long pa, u_int len) {
 	if (len == 0) {
 		return 0;
 	}
-	return va + len < va || (
-			(va < 0x180003F8 || va + len > 0x18000418) &&
-			(va < 0x180001F0 || va + len > 0x180001F8));
+	return pa + len < pa || (
+			(pa < 0x180003F8 || pa + len > 0x18000418) &&
+			(pa < 0x180001F0 || pa + len > 0x180001F8));
 }
 
 /* Overview:
