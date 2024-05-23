@@ -241,7 +241,8 @@ int env_alloc(struct Env **new, u_int parent_id) {
 	/* Exercise 3.4: Your code here. (1/4) */
 	if (LIST_EMPTY(&env_free_list)) {
 		*new = NULL;
-		return -E_NO_FREE_ENV;
+		r = -E_NO_FREE_ENV;
+		return r;
 	}
 	e = LIST_FIRST(&env_free_list);
 
@@ -317,7 +318,8 @@ static int load_icode_mapper(void *data, u_long va, size_t offset, u_int perm, c
 	}
 
 	/* Step 3: Insert 'p' into 'env->env_pgdir' at 'va' with 'perm'. */
-	return page_insert(env->env_pgdir, env->env_asid, p, va, perm);
+	r = page_insert(env->env_pgdir, env->env_asid, p, va, perm);
+	return r;
 }
 
 /* Overview:
