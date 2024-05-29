@@ -823,8 +823,9 @@ int copy_file_content(struct File *src, struct File *dst) {
 			return r;
 		}
 		memcpy(dst_blk, src_blk, BLOCK_SIZE);
-		file_dirty(dst_blk, BLOCK_SIZE);
+		file_dirty(dst, BLOCK_SIZE);
 	}
+	file_dirty(dst, dst->f_size);
 	// Flush the changes to the destination file
 	file_flush(dst);
 	debugf("%s/%s copied\n", dst->f_dir, dst->f_name);
@@ -862,19 +863,10 @@ int copy_directory_contents(struct File *src, struct File *dst) {
 			// depending on the value of 'f_type'.
 			// Lab 5-2-Exam: Your code here. (5/6)
 			if (dst_file->f_type == FTYPE_REG) {
-				if ((r = copy_file_content(dir_content + j, dst_file)) < 0) {
-					debugf("%d\n", r);
-					return r;
-				}
-				if ((r = file_dirty(dst_file, dst_file->f_size)) < 0) {
-					debugf("%d\n", r);
-					return r;
-				}
-				file_flush(dst);
-				break;
+				copy_file_content(dir_content + j, dst_file);
 			}
 			else if (dst_file->f_type == FTYPE_DIR) copy_directory_contents(dir_content + j, dst_file);
-			if ((r = file_dirty(dst_file, dst_file->f_size)) < 0) return r;
+		 file_dirty(dst_file, dst_file->f_size);
 	       }
 	}
 	file_flush(dst);
