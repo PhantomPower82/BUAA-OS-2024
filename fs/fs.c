@@ -811,6 +811,7 @@ int copy_file_content(struct File *src, struct File *dst) {
 	int nblock;
 	// Calculate the total number of blocks in the source file.
 	nblock = ROUND(src->f_size, BLOCK_SIZE) / BLOCK_SIZE;
+	debugf("%s/%s copying\n", dst->f_dir, dst->f_name);
 	for (u_int i = 0; i < nblock; i++) {
 		// Lab 5-2-Exam: Your code here. (3/6)
 		if ((r = file_get_block(src, i, &src_blk)) < 0) {
@@ -846,7 +847,7 @@ int copy_directory_contents(struct File *src, struct File *dst) {
 			struct File *dst_file;
 			// Step1: Alloc dst_file using 'dir_alloc_file'
 			// Lab 5-2-Exam: Your code here. (4/6)
-			if ((r = dir_alloc_file(src, &dst_file)) < 0) {
+			if ((r = dir_alloc_file(dst, &dst_file)) < 0) {
 					debugf("%d\n", r);
 				return r;
 			}
@@ -869,6 +870,7 @@ int copy_directory_contents(struct File *src, struct File *dst) {
 					debugf("%d\n", r);
 					return r;
 				}
+				file_flush(dst);
 				break;
 			}
 			else if (dst_file->f_type == FTYPE_DIR) copy_directory_contents(dir_content + j, dst_file);
